@@ -1,0 +1,147 @@
+\documentclass[12pt]{article}
+\usepackage{fullpage,amsmath,mathpazo,amsfonts,nicefrac}
+\usepackage{indentfirst}
+\usepackage{enumitem}
+\usepackage{array}
+\usepackage{tabu}
+\usepackage{listings}
+\usepackage{graphicx}
+\graphicspath{ {images/} }
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{multicol}
+\setlength{\columnsep}{1cm}
+\usepackage{geometry}
+\geometry{letterpaper,left=1.5cm,right=1.5cm,top=1.5cm,bottom=1.5cm}
+\usepackage{titlesec}
+\titlespacing{\section}{0pt}{\parskip}{-\parskip}
+\titlespacing{\subsection}{0pt}{\parskip}{-\parskip}
+
+
+\begin{document}
+
+\begin{titlepage}
+    \vspace*{5.7cm}
+    \begin{center}
+    {\scshape\huge Predictions for Movie Performance \par}
+    \vspace{1cm}
+    {\scshape\huge Midterm Report \par}
+    \vspace{1.5cm}
+    {\itshape\large Bingxin Wu (bw383) \par \bigskip Yiwen Jiang (yj76) }
+    \vspace{1cm}
+
+    \end{center}
+\end{titlepage}
+
+\clearpage
+\setcounter{page}{1}
+\begin{multicols}{2}
+\section{Data Description}
+\par
+\bigskip
+\subsection{Data Cleaning}
+\bigskip
+We first looked at the data statistics to have a general idea of the dataset. The original data we downloaded: "IMDB 5000 Movie Dataset" have three major problems when being used to examine the profitability of movies. Firstly, many entires were missing, secondly the variable \textit{gross} only stands for the sales in the US market, and thirdly, many movies used different currency for budget and gross revenue information without indicating such. \par
+To solve these problems, we obtained a new dataset of movie budgets and gross income from "the-numbers.com". Because the movie names in these two datasets are slightly different,  we used the “Fuzzy Lookup” add-in from Excel with threshold of 90\% to match the title name and generated a new dataset. In addition to the data collected, we added two new variables: \textit{profit}, which is world gross revenue minus budget, and \textit{single genre}, which is the dominant characteristic of the movie out of all the genre types listed. For the empty entries, we assumed that they were missing completely at random (MCAR) and continued with the analysis. 
+\par
+\bigskip
+\subsection{Data Visualization}
+\bigskip
+We are most interested in the ratings and profitabilities of the movies, and therefore we first generated the following two plots. We first plotted a histogram of the IMDB score, and observed that the scores can be fitted to a normal distribution with mean = 6.49, and standard deviation = 1.0753, which follows that law of large numbers. 
+\begin{center}
+\includegraphics[width=0.4\textwidth]{Histogram.png}\\
+Figure 1.2.1: IMDB score Histogram 
+\end{center}
+
+Similarly, we generated a histogram for profits. To get a more detailed look at the graph, we excluded the upper 5th percentile of the data, and recreated the plot. \par
+\begin{center}
+\includegraphics[width=0.4\textwidth]{95_Profit_Hist.png}\\
+Figure 1.2.2: 95\% Profit Histogram
+\end{center}
+
+
+The distribution is strongly skewed to the right, which means that in the future analysis, we should look at the median = 13514848 instead of the mean = 64760472 to obtain a more precise interpretation. 
+\par
+
+Furthermore, we looked at how movies of different genres perform in terms of profit and IMDB scores. \par
+\begin{center}
+\includegraphics[width=0.4\textwidth]{Barplot.png}\\
+Figure 1.2.3: Barplot showing average profit and IMBD score for different genres
+\end{center}
+\par
+From the barplot, it can be observed that while documentary and drama have the highest average IMDB scores, they are among the least profitable genres. Animations, Fantasy and Sci-Fi being the three most profitable genres fitted our expectation, as these movies are familiy-friendly and are generally believed to attract more audience. 
+\par The boxplots below give a better understanding of the score distribution within each genre.
+\begin{center}
+\includegraphics[width=0.4\textwidth]{Boxplot.png}\\
+Figure 1.2.4: Boxplots showing the imdb score for different genres
+\end{center}
+\par
+\bigskip
+\section{Preliminary Analyses}
+\par
+\bigskip
+\subsection{Feature Analysis}
+\bigskip
+Because of the massive amount of predictors in the dataset, we would eventually want to decrease the number of variables being used for further modeling. This will return a better model with smaller AIC and less chance of overfitting. From the correlation plot, we can see that there are strong correlations between budget, gross and profit. Also, IMDB scores tend to be correlated with cast facebook likes and duration of the movies. \par
+\begin{center}
+\includegraphics[width=0.3\textwidth]{Correlation.png}\\
+Figure 2.1.1: Correlation plot of selected factors 
+\end{center}
+\par
+Two separate methods were used to complete the process of reducing predictor numbers. Knowing the correlation matrix, we attempted to use PCA to select the principal variables, the ability of explaining variances of which were listed in the next table. \par
+\begin{center}
+\includegraphics[width=0.3\textwidth]{PCA2.jpeg}\\
+Figure 2.1.2: PCA
+\end{center}
+\begin{center}
+\includegraphics[width=0.5\textwidth]{PCA3.jpeg}\\
+Figure 2.1.3: Variable Importance
+\end{center}
+\par
+Next, we used random forest. To get a good estimate, we first completed a pilot run to find an appropriate number of trees to grow. Given the output, the optimal number of trees to choose is about 200. \par
+\begin{center}
+\includegraphics[width=0.4\textwidth]{tree.jpeg}\\
+Figure 2.1.4: Pilot run MSE
+\end{center}
+\par
+Under this context, the selected variables and their importance are listed in the following charts. \par
+\begin{center}
+\includegraphics[width=0.4\textwidth]{var.png}\\
+Figure 2.1.5: Variable Importance
+\end{center}
+\begin{center}
+\includegraphics[width=0.4\textwidth]{var3.jpeg}\\
+Figure 2.3.2: Variable Importance
+\end{center}
+\subsection{Linear Regression}
+\bigskip
+The first analysis we did was a linear regression showing the relationship between budget and profit of the movies. \par 
+The fitted line is: y=-5.934e+06+3.082x, with both coefficients being significant. 
+The $R^2$ of the regression is 54.72\%, which is a satisfying result for linear regression.\par
+The scattered points give a growing trend in budgets as times passes. 
+\begin{center}
+\includegraphics[width=0.4\textwidth]{Regression_Profit_Budget.png}\\
+Figure 2.2.1: Linear regression of budget vs profit
+\end{center}
+\par
+
+\subsection{Bagging}
+\bigskip
+We also built a model with bagging to look at the IMDB scores. The original data were separated into two groups: training set and testing set. After using the training data to fit a bagged-tree model, we applied the model to the testing set and obtained their predicted IMDB scores based on other factors. As can be seen in the plot below, when plotting the actual value against the forecasts, the fitted line goes through the origin with slope equals 1. This means that the fit is good and to be more accurate, the MSE is only 0.5968. 
+
+\begin{center}
+\includegraphics[width=0.4\textwidth]{Bagging.jpeg}\\
+Figure 2.3.3: Variable Importance
+\end{center}
+
+\section{Next Steps}
+\bigskip
+For future analyses, we will first continue to focus on the variable selection process, and find good combinations of predictors for both the rating and the profit predictions. We will try out more methods such as Lasso for both analysis, in order to achieve a relatively good balance between bias and variance for future models and thus avoid over/under-fitting. \par
+Also, our correlation plot suggested that duration is a significant indicator for IMDB score, and hence we will run regressions of score against duration to explore the underlying relationship.  
+\par
+The models we have for now are relatively simple as we are currently in the data-exploration phase. We will try to develop more complicated and precise models for the predictions.\par
+Another thing we will work on is to relate the Oscar Awards results to our data. We will include the new Awards dataset into the analysis, and look at questions such as whether the directors and actors that featured in the award-winning movies tend to generate more box office revenue and receive higher ratings for their other movies, and also will the award has an impact on the gross and ratings of the movies.
+
+\end{multicols}
+
+\end{document}
